@@ -1,6 +1,11 @@
 [package]
-name = "todolist"
+name = "task_manager"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = "0.4"  # For handling dates and times
+uuid = { version = "1.6", features = ["v4"] }  # For generating UUIDs
+serde = { version = "1.0", features = ["derive"] }  # For serializing and deserializing
+serde_json = "1.0"  # For handling JSON
+clap = "3.0"  # For argument parsing in CLI applications

@@ -1,40 +1,93 @@
-use std::io;
-
+use task_manager::clear_screen;
+use task_manager::input;
+use task_manager::load_from_json;
+use task_manager::save_to_json;
+use task_manager::time;
+use task_manager::uuid;
+use task_manager::Task;
 fn main() {
-    let mut items: Vec<String> = Vec::new();
+    let mut data: Vec<Task> = load_from_json();
 
     loop {
-        let input_u = input();
+        println!("");
+        println!("please Enter this cammands");
+        println!(" add   : to add task");
+        println!("delete : to delete task ");
+        println!("update : to update task");
+        println!(" clear : to clear screen ");
+        println!(" save  : to save task");
+        println!("  q    : to quit program  ⚠️ warning before quit toh insure you save task");
+        println!("-------------------------------------------------------------------------");
+        println!("");
 
-        match input_u.as_str() {
-            "exit" => break,
-            "ls" => {
-                for l in &items  {
-                    println!("");
-                    println!("{}",l);
-                }
-            } ,
-            "Add" => {
-                println!("");
-                println!("enter item name");
-                let new_item = input(); 
-                items.push(new_item);    
-            },
-
-            "delete" => {
-                println!("");
-                println!("enter delete item name");
-                let del_input = input();
-                items.retain(|item| item != &del_input);
+        let first_input = input().to_string();
+        match first_input.as_str().trim() {
+            "add" => {
+                println!("enter your task title");
+                let title = input().to_string();
+                println!("enter your task text");
+                let text = input().to_string();
+                let task = Task {
+                    id: uuid(),
+                    title: title,
+                    text: text,
+                    date: time(),
+                };
+                data.push(task);
+                println!("task added");
             }
+            "update" => {
+                println!("enter id to update task");
+                let update_id = input().as_str().trim().to_string();
 
-            _ => println!("Type something valid"),
+                let mut found = false;
+                for task in data.iter_mut() {
+                    if task.id == update_id {
+                        found = true;
+                        println!("Enter new title (leave blank to keep the same):");
+                        let new_title = input().to_string();
+                        if !new_title.is_empty() {
+                            task.title = new_title;
+                        }
+
+                        println!("Enter new text (leave blank to keep the same):");
+                        let new_text = input().to_string();
+                        if !new_text.is_empty() {
+                            task.text = new_text;
+                        }
+                        println!("task updated");
+                        break;
+                    }
+                }
+                if !found {
+                    println!("id not found");
+                }
+            }
+            "display" => {
+                println!("{:?}", data);
+            }
+            "delete" => {
+                println!("enter id to delete task");
+                let delete = input().as_str().trim().to_string();
+                let orignal_len = data.len();
+                data.retain(|task| task.id != delete);
+                if data.len() == orignal_len {
+                    println!("your id not found please enter a valid id");
+                } else {
+                    println!("task deleted with id {}", delete);
+                }
+            }
+            "save" => {
+                save_to_json(&data);
+                println!("Tasks saved successfully.");
+            }
+            "q" => {
+                break;
+            }
+            "clear" => {
+                clear_screen();
+            }
+            _ => println!("camand not found"),
         }
     }
-}
-
-fn input() -> String {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("Please enter the text");
-    input.trim().to_string()
 }
